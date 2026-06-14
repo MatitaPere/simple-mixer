@@ -5,9 +5,18 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
     steps:
       - uses: actions/checkout@v3
       
@@ -19,7 +28,9 @@ jobs:
       - run: npm install
       - run: npm run build
       
-      - uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/upload-pages-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: './dist'
+      
+      - uses: actions/deploy-pages@v2
+        id: deployment
