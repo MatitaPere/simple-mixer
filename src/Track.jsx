@@ -1,4 +1,4 @@
-export function Track({ track, onVolumeChange, onPanChange, onRemove }) {
+export function Track({ track, onVolumeChange, onPanChange, onRemove, onMuteToggle, onSoloToggle }) {
   const handleVolumeChange = (e) => {
     onVolumeChange(track.id, parseFloat(e.target.value));
   };
@@ -19,6 +19,22 @@ export function Track({ track, onVolumeChange, onPanChange, onRemove }) {
     <div className="track">
       <div className="track-header">
         <h3 title={track.name}>{track.name}</h3>
+      </div>
+
+      <div className="track-controls">
+        <button
+          className={`btn-control btn-mute ${track.isMuted ? 'active' : ''}`}
+          onClick={() => onMuteToggle(track.id)}
+          title="Mute this track"
+        >
+        </button>          
+        <button
+          className={`btn-control btn-solo ${track.isSoloed ? 'active' : ''}`}
+          onClick={() => onSoloToggle(track.id)}
+          title="Solo this track"
+        >
+          S
+        </button>
       </div>
 
       <div className="pan-container">

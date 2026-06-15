@@ -10,6 +10,7 @@ export class AudioEngine {
     this.startTime = 0;
     this.pauseTime = 0;
     this.maxTracks = 6;
+    this.tempo = 1; // 1 = normal speed, 0.5 = half speed, etc.
   }
 
   async loadAudioFile(file) {
@@ -33,6 +34,8 @@ export class AudioEngine {
       volume: 1,
       pan: 0,
       isPlaying: false,
+      isMuted: false,
+      isSoloed: false,
     };
 
     track.gainNode.connect(track.panNode);
@@ -58,12 +61,13 @@ export class AudioEngine {
     if (this.isPlaying) return;
 
     this.isPlaying = true;
-    this.startTime = this.context.currentTime - this.pauseTime;
+    this.startTime = this.context.currentTime - this.pauseTime / this.tempo;
 
     this.tracks.forEach((track) => {
       if (track.buffer) {
         track.source = this.context.createBufferSource();
         track.source.buffer = track.buffer;
+        track.source.playbackRate.value = this.tempo;
         track.source.connect(track.gainNode);
         track.source.start(0, this.pauseTime);
 
@@ -80,7 +84,7 @@ export class AudioEngine {
     if (!this.isPlaying) return;
 
     this.isPlaying = false;
-    this.pauseTime = this.context.currentTime - this.startTime;
+    this.pauseTime = (this.context.currentTime - this.startTime) * this.tempo;
 
     this.tracks.forEach((track) => {
       if (track.source) {
@@ -123,7 +127,7 @@ export class AudioEngine {
     const track = this.tracks.find((t) => t.id === trackId);
     if (track) {
       track.volume = Math.max(0, Math.min(volume, 1));
-      track.gainNode.gain.value = track.volume;
+      this.updateTrackGain(track);
     }
   }
 
@@ -135,13 +139,68 @@ export class AudioEngine {
     }
   }
 
+  setTrackMute(trackId, muted) {
+    const track = this.tracks.find((t) => t.id === trackId);
+    if (track) {
+      track.isMuted = muted;
+      // If muting, unsoloify this track
+      if (muted && track.isSoloed) {
+        track.isSoloed = false;
+      }
+      this.updateTrackGain(track);
+    }
+  }
+
+  setTrackSolo(trackId, soloed) {
+    const track = this.tracks.find((t) => t.id === trackId);
+    if (track) {
+      track.isSoloed = soloed;
+      // If soloing, unmute this track
+      if (soloed && track.isMuted) {
+        track.isMuted = false;
+      }
+      this.updateAllTrackGains();
+    }
+  }
+
+  updateTrackGain(track) {
+    if (track.isMuted) {
+      track.gainNode.gain.value = 0;
+    } else {
+      const hasSoloedTracks = this.tracks.some((t) => t.isSoloed);
+      if (hasSoloedTracks && !track.isSoloed) {
+        track.gainNode.gain.value = 0;
+      } else {
+        track.gainNode.gain.value = track.volume;
+      }
+    }
+  }
+
+  updateAllTrackGains() {
+    this.tracks.forEach((track) => {
+      this.updateTrackGain(track);
+    });
+  }
+
   setMasterVolume(volume) {
     this.masterGain.gain.value = Math.max(0, Math.min(volume, 1));
   }
 
+  setTempo(tempo) {
+    const newTempo = Math.max(0.25, Math.min(tempo, 2)); // 0.25x to 2x
+    
+    if (this.isPlaying) {
+      this.pause();
+      this.tempo = newTempo;
+      this.play();
+    } else {
+      this.tempo = newTempo;
+    }
+  }
+
   getCurrentTime() {
     if (this.isPlaying) {
-      return this.context.currentTime - this.startTime;
+      return (this.context.currentTime - this.startTime) * this.tempo;
     }
     return this.pauseTime;
   }
@@ -165,7 +224,7 @@ export class AudioEngine {
     masterGain.connect(offlineContext.destination);
 
     for (const track of this.tracks) {
-      if (track.buffer) {
+      if (track.buffer && !track.isMuted) {
         const gainNode = offlineContext.createGain();
         const panNode = offlineContext.createStereoPanner();
 
@@ -177,6 +236,7 @@ export class AudioEngine {
 
         const source = offlineContext.createBufferSource();
         source.buffer = track.buffer;
+        source.playbackRate.value = this.tempo;
         source.connect(gainNode);
         source.start(0, 0);
       }

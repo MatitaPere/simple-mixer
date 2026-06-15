@@ -518,3 +518,61 @@ body {
 .btn-delete:active {
   transform: translateY(0);
 }
+
+.control-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.tempo-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 250px;
+}
+
+.tempo-control label {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 110px;
+}
+
+.track-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.btn-control {
+  background-color: var(--surface-light);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 44px;
+}
+
+.btn-control:hover {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.btn-control.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
+}
+
+.btn-mute {
+  font-size: 16px;
+}
+
+.btn-solo {
+  font-size: 13px;
+}
