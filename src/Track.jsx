@@ -27,7 +27,8 @@ export function Track({ track, onVolumeChange, onPanChange, onRemove, onMuteTogg
           onClick={() => onMuteToggle(track.id)}
           title="Mute this track"
         >
-        </button>          
+          M
+        </button>
         <button
           className={`btn-control btn-solo ${track.isSoloed ? 'active' : ''}`}
           onClick={() => onSoloToggle(track.id)}

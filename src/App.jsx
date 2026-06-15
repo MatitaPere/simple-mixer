@@ -10,7 +10,6 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [masterVolume, setMasterVolume] = useState(1);
-  const [tempo, setTempo] = useState(1);
   const updateIntervalRef = useRef(null);
 
   useEffect(() => {
@@ -129,12 +128,6 @@ function App() {
     engineRef.current.setMasterVolume(volume);
   };
 
-  const handleTempoChange = (e) => {
-    const newTempo = parseFloat(e.target.value);
-    setTempo(newTempo);
-    engineRef.current.setTempo(newTempo);
-  };
-
   const handleExport = async () => {
     try {
       if (tracks.length === 0) {
@@ -195,32 +188,17 @@ function App() {
           </span>
         </div>
 
-        <div className="control-row">
-          <div className="master-volume">
-            <label>Master Volume: {Math.round(masterVolume * 100)}%</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={masterVolume}
-              onChange={handleMasterVolumeChange}
-              className="fader"
-            />
-          </div>
-
-          <div className="tempo-control">
-            <label>Tempo: {(tempo * 100).toFixed(0)}%</label>
-            <input
-              type="range"
-              min="0.25"
-              max="2"
-              step="0.05"
-              value={tempo}
-              onChange={handleTempoChange}
-              className="fader"
-            />
-          </div>
+        <div className="master-volume">
+          <label>Master Volume: {Math.round(masterVolume * 100)}%</label>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={masterVolume}
+            onChange={handleMasterVolumeChange}
+            className="fader"
+          />
         </div>
       </div>
 
